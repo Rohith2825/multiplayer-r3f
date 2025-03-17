@@ -1,82 +1,101 @@
-# StrategyFox XR Shopping Experience
+# XR-SF-R3F
 
-Welcome to the **StrategyFox XR Shopping Experience** project! This README will guide you through understanding, setting up, and contributing to our immersive e-commerce platform, designed to offer a fully interactive and social shopping environment on the web.
-![image](https://github.com/user-attachments/assets/95840bba-f562-4d5f-b1b1-db731f89d7a9)
+A 3D e-commerce experience built with React Three Fiber and Rapier Physics.
 
----
+## Features
 
-## Project Overview
+- 🛍️ Interactive 3D Shopping Experience
+- 🎮 First-Person Controls
+- 🎯 Product Interaction
+- 🛒 Shopping Cart Integration
+- 💫 Smooth Animations
+- 🌐 Multiplayer Support
+- 📱 Mobile-Friendly Controls
+- 🎨 Modern UI/UX
 
-StrategyFox redefines online shopping by merging extended reality (XR) with multiplayer interactions, live support, and interactive 3D visualizations. Built with **Three.js** and integrated with **Shopify** for seamless product management and payments, our platform provides an all-in-one solution for modern online retail.
+## Tech Stack
 
-### Key Features
-
-- **Multiplayer Shopping**: Engage with friends or other users in real-time as you shop together within the XR environment.
-- **3D Product Viewing**: Interact with highly detailed 3D models, allowing for closer inspection of products from all angles.
-- **AR Try-On**: Experience products like cosmetics or clothing virtually, trying them on in augmented reality before purchasing.
-- **Live Chat & Voice Chat**: Communicate with others or customer support within the environment, adding a social layer to online shopping.
-- **AI-Driven Shopping Assistant**: A chatbot and virtual assistant help answer questions, suggest products, and enhance customer experience.
-
----
+- React Three Fiber
+- Three.js
+- Rapier Physics
+- Zustand (State Management)
+- Socket.IO (Multiplayer)
+- GSAP (Animations)
+- Tailwind CSS
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Node.js** (v14 or higher)
-- **npm** (v6 or higher)
-- Basic understanding of **Three.js** and **React Native**
+- Node.js (v14 or higher)
+- npm or yarn
 
 ### Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/StrategyFox-XR-Shopping.git
-   cd StrategyFox-XR-Shopping
-   ```
+1. Clone the repository:
+```bash
+git clone https://github.com/Rohith2825/multiplayer-r3f.git
+cd multiplayer-r3f
+```
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+2. Install dependencies:
+```bash
+npm install
+```
 
-3. **Setup Shopify Integration**:
-   - Go to your Shopify dashboard.
-   - Configure the API keys and Webhooks as per the **Shopify Integration Guide** in this repository.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-4. **Run the Development Server**:
-   ```bash
-   npm run frontend-build
-   npm run backend-build
-   ```
+4. Start the multiplayer server (in a separate terminal):
+```bash
+npm run server
+```
 
-5. **View the Experience**:
-   - Open your browser and navigate to `http://localhost:3000` to view the XR shopping environment.
+5. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
----
+## Multiplayer Features
 
-## Usage
+- Real-time player synchronization
+- Smooth player movement interpolation
+- Visual representation of other players
+- Collision handling between players
+- Mobile-friendly touch controls
 
-Once the server is running, you can explore the immersive shopping environment by selecting different items, chatting with friends, and experiencing products in AR. Multiplayer mode allows users to join shared rooms for a collaborative shopping experience.
+## Controls
 
----
+### Desktop
+- WASD: Movement
+- Mouse: Look around
+- Space: Jump
+- Click: Interact with products
+
+### Mobile
+- Virtual Joystick: Movement
+- Touch and drag: Look around
+- Tap: Interact with products
+
+## Project Structure
+
+```
+src/
+├── components/     # React components
+├── hooks/         # Custom hooks
+├── stores/        # Zustand stores
+├── api/           # API services
+├── App.jsx        # Main application component
+└── main.tsx       # Application entry point
+```
 
 ## Contributing
 
-1. **Fork the Project**.
-2. **Create your Feature Branch** (`git checkout -b feature/AmazingFeature`).
-3. **Commit your Changes** (`git commit -m 'Add some AmazingFeature'`).
-4. **Push to the Branch** (`git push origin feature/AmazingFeature`).
-5. **Open a Pull Request**.
-
----
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-## Contact
-
-For more details, questions, or feedback, reach out to [StrategyFox Support](mailto:support@strategyfox.com).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
