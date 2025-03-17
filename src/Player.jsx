@@ -8,7 +8,9 @@ import nipplejs from "nipplejs";
 import gsap from "gsap";
 import { useComponentStore, useTouchStore } from "./stores/ZustandStores";
 import { CameraController } from "./CameraController";
-import { ProductGSAPUtil }  from "./ProductGSAPUtil";
+import { ProductGSAPUtil } from "./ProductGSAPUtil";
+import io from "socket.io-client";
+import { OtherPlayer } from "./OtherPlayer";
 
 const MOVE_SPEED = 12;
 const TOUCH_SENSITIVITY = {
@@ -49,6 +51,10 @@ export const Player = () => {
   const { camera } = useThree();
 
   const rapier = useRapier();
+
+  const socketRef = useRef();
+  const [otherPlayers, setOtherPlayers] = useState({});
+  const [socketId, setSocketId] = useState(null);
 
   useEffect(() => {
     const handleOrientationChange = () => {
@@ -270,8 +276,74 @@ export const Player = () => {
 
   const combinedInput = new THREE.Vector3();
   const movementDirection = new THREE.Vector3();
+
+  useEffect(() => {
+    // Initialize Socket.IO connection
+    socketRef.current = io('http://localhost:3001');
+
+    socketRef.current.on('connect', () => {
+      console.log('Connected to server with ID:', socketRef.current.id);
+      setSocketId(socketRef.current.id);
+    });
+
+    socketRef.current.on('currentPlayers', (players) => {
+      console.log('Received current players:', players);
+      const playersMap = {};
+      players.forEach((player) => {
+        if (player.id !== socketRef.current.id) {
+          playersMap[player.id] = player;
+        }
+      });
+      console.log('Setting other players:', playersMap);
+      setOtherPlayers(playersMap);
+    });
+
+    socketRef.current.on('playerJoined', (player) => {
+      console.log('Player joined:', player);
+      setOtherPlayers((prev) => {
+        const newPlayers = {
+          ...prev,
+          [player.id]: player,
+        };
+        console.log('Updated other players:', newPlayers);
+        return newPlayers;
+      });
+    });
+
+    socketRef.current.on('playerLeft', (playerId) => {
+      console.log('Player left:', playerId);
+      setOtherPlayers((prev) => {
+        const newPlayers = { ...prev };
+        delete newPlayers[playerId];
+        console.log('Updated other players after leave:', newPlayers);
+        return newPlayers;
+      });
+    });
+
+    socketRef.current.on('playerMoved', (playerData) => {
+      console.log('Player moved:', playerData);
+      setOtherPlayers((prev) => {
+        const newPlayers = {
+          ...prev,
+          [playerData.id]: {
+            ...prev[playerData.id],
+            position: playerData.position,
+            rotation: playerData.rotation,
+          },
+        };
+        return newPlayers;
+      });
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
   useFrame((state) => {
-    if (!playerRef.current || isAnimating ) return;
+    if (!playerRef.current || isAnimating) return;
 
     const { y: playerY } = playerRef.current.translation();
     if (playerY < RESPAWN_HEIGHT) {
@@ -292,17 +364,34 @@ export const Player = () => {
 
       movementDirection
         .copy(combinedInput)
-        .applyQuaternion(state.camera.quaternion) 
+        .applyQuaternion(state.camera.quaternion)
         .normalize()
         .multiplyScalar(MOVE_SPEED);
 
-    
       playerRef.current.wakeUp();
       playerRef.current.setLinvel({
         x: movementDirection.x,
         y: velocity.y,
         z: movementDirection.z,
       });
+
+      // Emit position update
+      if (socketRef.current) {
+        const position = playerRef.current.translation();
+        const rotation = state.camera.rotation;
+        socketRef.current.emit('playerMove', {
+          position: {
+            x: position.x,
+            y: position.y,
+            z: position.z,
+          },
+          rotation: {
+            x: rotation.x,
+            y: rotation.y,
+            z: rotation.z,
+          },
+        });
+      }
 
       if (jump && canJump) {
         doJump();
@@ -311,9 +400,8 @@ export const Player = () => {
       }
     }
 
-  
     const { x, y, z } = playerRef.current.translation();
-    const lerpFactor = 0.05; 
+    const lerpFactor = 0.05;
     state.camera.position.lerp({ x, y, z }, lerpFactor);
   });
 
@@ -331,19 +419,27 @@ export const Player = () => {
   };
 
   return (
-    <RigidBody
-      colliders={false}
-      mass={1}
-      ref={playerRef}
-      lockRotations
-      canSleep={false} //IMP: May lead to Player Halt
-    >
-      <ProductGSAPUtil setAnimating={setAnimating} playerRef={playerRef} />
-      <CameraController setAnimating={setAnimating} playerRef={playerRef} />
-      <mesh castShadow>
+    <>
+      <RigidBody
+        colliders={false}
+        mass={1}
+        ref={playerRef}
+        lockRotations
+        canSleep={false}
+      >
+        <ProductGSAPUtil setAnimating={setAnimating} playerRef={playerRef} />
+        <CameraController setAnimating={setAnimating} playerRef={playerRef} />
         <CapsuleCollider args={[1.2, 1]} />
-      </mesh>
-    </RigidBody>
+      </RigidBody>
+      {Object.values(otherPlayers).map((player) => (
+        <OtherPlayer
+          key={player.id}
+          id={player.id}
+          position={player.position}
+          rotation={player.rotation}
+        />
+      ))}
+    </>
   );
 };
 
