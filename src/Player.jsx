@@ -465,60 +465,76 @@ export const Player = () => {
 
   return (
     <>
-      <Html>
+      <Html position={camera.rotation}>
         {showRoomUI && (
-          <div style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '20px',
-            borderRadius: '10px',
-            color: 'white',
-            zIndex: 1000,
-          }}>
-            <h2>Join or Create Room</h2>
-            <div style={{ marginTop: '20px' }}>
+          <div 
+            style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '8px',
+              borderRadius: '8px',
+              color: 'white',
+              zIndex: 1000,
+              fontFamily: 'Poppins, sans-serif',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <h2 style={{ fontSize: '0.8em', margin: '0' }}>JOIN OR CREATE</h2>
+            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <input
                 type="text"
                 value={inputRoomCode}
                 onChange={(e) => setInputRoomCode(e.target.value)}
                 placeholder="Enter room code"
                 style={{
-                  padding: '8px',
-                  marginRight: '10px',
+                  padding: '4px',
+                  marginBottom: '6px',
                   borderRadius: '4px',
                   border: 'none',
+                  fontSize: '0.8em',
+                  width: '100%',
+                  maxWidth: '180px',
+                  fontFamily: 'Poppins, sans-serif',
                 }}
               />
-              <button
-                onClick={handleJoinRoom}
-                style={{
-                  padding: '8px 16px',
-                  marginRight: '10px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  cursor: 'pointer',
-                }}
-              >
-                Join Room
-              </button>
-              <button
-                onClick={handleCreateRoom}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: '#2196F3',
-                  color: 'white',
-                  cursor: 'pointer',
-                }}
-              >
-                Create Room
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <button
+                  onClick={handleJoinRoom}
+                  style={{
+                    padding: '4px 10px',
+                    marginRight: '6px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '0.8em',
+                    fontFamily: 'Poppins, sans-serif',
+                  }}
+                >
+                  Join Room
+                </button>
+                <button
+                  onClick={handleCreateRoom}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '0.8em',
+                    fontFamily: 'Poppins, sans-serif',
+                  }}
+                >
+                  Create Room
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -533,8 +549,11 @@ export const Player = () => {
             borderRadius: '5px',
             color: 'white',
             zIndex: 1000,
+            fontFamily: 'Poppins, sans-serif',
+            textAlign: 'center',
           }}>
-            Room Code: {roomCode}
+            <div style={{ fontSize: '1em', marginBottom: '5px' }}>ROOM CODE</div>
+            <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>{roomCode}</div>
           </div>
         )}
       </Html>
