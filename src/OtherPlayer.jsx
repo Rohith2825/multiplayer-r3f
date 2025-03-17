@@ -1,16 +1,17 @@
 import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { Html } from '@react-three/drei';
 
-export const OtherPlayer = ({ id, position, rotation }) => {
+export const OtherPlayer = ({ id, name, position, rotation }) => {
   const meshRef = useRef();
   const targetPosition = new THREE.Vector3();
-  const targetRotation = new THREE.Euler();
+  const targetQuaternion = new THREE.Quaternion();
 
   useEffect(() => {
     if (meshRef.current) {
       targetPosition.set(position.x, position.y, position.z);
-      targetRotation.set(rotation.x, rotation.y, rotation.z);
+      targetQuaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
     }
   }, [position, rotation]);
 
@@ -19,29 +20,29 @@ export const OtherPlayer = ({ id, position, rotation }) => {
       // Smoothly interpolate position
       meshRef.current.position.lerp(targetPosition, 0.1);
       
-      // Smoothly interpolate rotation
-      meshRef.current.rotation.x = THREE.MathUtils.lerp(
-        meshRef.current.rotation.x,
-        targetRotation.x,
-        0.1
-      );
-      meshRef.current.rotation.y = THREE.MathUtils.lerp(
-        meshRef.current.rotation.y,
-        targetRotation.y,
-        0.1
-      );
-      meshRef.current.rotation.z = THREE.MathUtils.lerp(
-        meshRef.current.rotation.z,
-        targetRotation.z,
-        0.1
-      );
+      // Smoothly interpolate quaternion
+      meshRef.current.quaternion.slerp(targetQuaternion, 0.1);
     }
   });
 
   return (
-    <mesh ref={meshRef} castShadow>
-      <capsuleGeometry args={[1, 2, 4, 8]} />
-      <meshStandardMaterial color="blue" />
-    </mesh>
+    <group ref={meshRef}>
+      <mesh castShadow>
+        <capsuleGeometry args={[1, 2, 4, 8]} />
+        <meshStandardMaterial color="blue" />
+      </mesh>
+      <Html position={[0, 3, 0]} center>
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          whiteSpace: 'nowrap',
+        }}>
+          {name}
+        </div>
+      </Html>
+    </group>
   );
 }; 

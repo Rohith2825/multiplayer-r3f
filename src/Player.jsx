@@ -4,6 +4,7 @@ import { CapsuleCollider, RigidBody, useRapier } from "@react-three/rapier";
 import { useRef, useState, useEffect } from "react";
 import { usePersonControls } from "@/hooks.js";
 import { useFrame, useThree } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import nipplejs from "nipplejs";
 import gsap from "gsap";
 import { useComponentStore, useTouchStore } from "./stores/ZustandStores";
@@ -55,6 +56,9 @@ export const Player = () => {
   const socketRef = useRef();
   const [otherPlayers, setOtherPlayers] = useState({});
   const [socketId, setSocketId] = useState(null);
+  const [roomCode, setRoomCode] = useState('');
+  const [showRoomUI, setShowRoomUI] = useState(true);
+  const [inputRoomCode, setInputRoomCode] = useState('');
 
   useEffect(() => {
     const handleOrientationChange = () => {
@@ -278,61 +282,85 @@ export const Player = () => {
   const movementDirection = new THREE.Vector3();
 
   useEffect(() => {
-    // Initialize Socket.IO connection
-    socketRef.current = io('http://localhost:3001');
-
-    socketRef.current.on('connect', () => {
-      console.log('Connected to server with ID:', socketRef.current.id);
-      setSocketId(socketRef.current.id);
+    // Initialize Socket.IO connection with configuration
+    socketRef.current = io('http://localhost:3001/update', {
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+      forceNew: true,
+      autoConnect: true,
     });
 
-    socketRef.current.on('currentPlayers', (players) => {
-      console.log('Received current players:', players);
+    socketRef.current.on('connect', () => {
+      console.log('Connected to update namespace with ID:', socketRef.current.id);
+      setSocketId(socketRef.current.id);
+      // Request initial player data
+      socketRef.current.emit('setID');
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+    });
+
+    socketRef.current.on('disconnect', (reason) => {
+      console.log('Disconnected from update namespace. Reason:', reason);
+    });
+
+    socketRef.current.on('reconnect', (attemptNumber) => {
+      console.log('Reconnected to update namespace after', attemptNumber, 'attempts');
+    });
+
+    socketRef.current.on('reconnect_error', (error) => {
+      console.error('Reconnection error:', error);
+    });
+
+    socketRef.current.on('reconnect_failed', () => {
+      console.error('Failed to reconnect to server');
+    });
+
+    socketRef.current.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    socketRef.current.on('generateCode', (newRoomCode) => {
+      console.log('=== ROOM CODE GENERATED ===');
+      console.log('Room Code:', newRoomCode);
+      console.log('===========================');
+      setRoomCode(newRoomCode);
+      setShowRoomUI(false);
+    });
+
+    socketRef.current.on('invalidRoomCode', (message) => {
+      console.log('Invalid Room Code:', message);
+      alert('Invalid room code. Please try again.');
+    });
+
+    socketRef.current.on('playerData', (players) => {
+      console.log('Received player data:', players);
       const playersMap = {};
       players.forEach((player) => {
         if (player.id !== socketRef.current.id) {
-          playersMap[player.id] = player;
+          playersMap[player.id] = {
+            id: player.id,
+            name: player.name,
+            position: {
+              x: player.position_x,
+              y: player.position_y,
+              z: player.position_z,
+            },
+            rotation: {
+              x: player.quaternion_x,
+              y: player.quaternion_y,
+              z: player.quaternion_z,
+              w: player.quaternion_w,
+            },
+          };
         }
       });
-      console.log('Setting other players:', playersMap);
       setOtherPlayers(playersMap);
-    });
-
-    socketRef.current.on('playerJoined', (player) => {
-      console.log('Player joined:', player);
-      setOtherPlayers((prev) => {
-        const newPlayers = {
-          ...prev,
-          [player.id]: player,
-        };
-        console.log('Updated other players:', newPlayers);
-        return newPlayers;
-      });
-    });
-
-    socketRef.current.on('playerLeft', (playerId) => {
-      console.log('Player left:', playerId);
-      setOtherPlayers((prev) => {
-        const newPlayers = { ...prev };
-        delete newPlayers[playerId];
-        console.log('Updated other players after leave:', newPlayers);
-        return newPlayers;
-      });
-    });
-
-    socketRef.current.on('playerMoved', (playerData) => {
-      console.log('Player moved:', playerData);
-      setOtherPlayers((prev) => {
-        const newPlayers = {
-          ...prev,
-          [playerData.id]: {
-            ...prev[playerData.id],
-            position: playerData.position,
-            rotation: playerData.rotation,
-          },
-        };
-        return newPlayers;
-      });
     });
 
     return () => {
@@ -341,6 +369,22 @@ export const Player = () => {
       }
     };
   }, []);
+
+  const handleCreateRoom = () => {
+    if (socketRef.current) {
+      console.log('Creating new room...');
+      socketRef.current.emit('createRoom');
+    } else {
+      console.error('Socket not connected');
+    }
+  };
+
+  const handleJoinRoom = () => {
+    if (socketRef.current && inputRoomCode.trim()) {
+      console.log('Joining room:', inputRoomCode.trim());
+      socketRef.current.emit('joinRoom', inputRoomCode.trim());
+    }
+  };
 
   useFrame((state) => {
     if (!playerRef.current || isAnimating) return;
@@ -378,18 +422,19 @@ export const Player = () => {
       // Emit position update
       if (socketRef.current) {
         const position = playerRef.current.translation();
-        const rotation = state.camera.rotation;
-        socketRef.current.emit('playerMove', {
+        const quaternion = state.camera.quaternion;
+        socketRef.current.emit('updatePlayer', {
           position: {
             x: position.x,
             y: position.y,
             z: position.z,
           },
-          rotation: {
-            x: rotation.x,
-            y: rotation.y,
-            z: rotation.z,
-          },
+          quaternion: [
+            quaternion.x,
+            quaternion.y,
+            quaternion.z,
+            quaternion.w,
+          ],
         });
       }
 
@@ -420,6 +465,79 @@ export const Player = () => {
 
   return (
     <>
+      <Html>
+        {showRoomUI && (
+          <div style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '20px',
+            borderRadius: '10px',
+            color: 'white',
+            zIndex: 1000,
+          }}>
+            <h2>Join or Create Room</h2>
+            <div style={{ marginTop: '20px' }}>
+              <input
+                type="text"
+                value={inputRoomCode}
+                onChange={(e) => setInputRoomCode(e.target.value)}
+                placeholder="Enter room code"
+                style={{
+                  padding: '8px',
+                  marginRight: '10px',
+                  borderRadius: '4px',
+                  border: 'none',
+                }}
+              />
+              <button
+                onClick={handleJoinRoom}
+                style={{
+                  padding: '8px 16px',
+                  marginRight: '10px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Join Room
+              </button>
+              <button
+                onClick={handleCreateRoom}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: '#2196F3',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Create Room
+              </button>
+            </div>
+          </div>
+        )}
+        {roomCode && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '10px 20px',
+            borderRadius: '5px',
+            color: 'white',
+            zIndex: 1000,
+          }}>
+            Room Code: {roomCode}
+          </div>
+        )}
+      </Html>
       <RigidBody
         colliders={false}
         mass={1}
@@ -431,10 +549,11 @@ export const Player = () => {
         <CameraController setAnimating={setAnimating} playerRef={playerRef} />
         <CapsuleCollider args={[1.2, 1]} />
       </RigidBody>
-      {Object.values(otherPlayers).map((player) => (
+      {Object.entries(otherPlayers).map(([id, player]) => (
         <OtherPlayer
-          key={player.id}
-          id={player.id}
+          key={id}
+          id={id}
+          name={player.name}
           position={player.position}
           rotation={player.rotation}
         />
