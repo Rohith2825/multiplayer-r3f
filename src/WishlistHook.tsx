@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client'; // Import socket.io client
 
-const socket = io('http://localhost:3001'); // Replace with your socket server URL
+const socket = io('https://f7d3-2409-40f4-4022-ace-d029-bca6-988d-b0b7.ngrok-free.app'); // Replace with your socket server URL
 
 function useWishlist() {
   const [wishlist, setWishlist] = useState(() => {

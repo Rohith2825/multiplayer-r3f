@@ -72,7 +72,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
       }
 
       // Connect to /chat
-      chatSocketRef.current = io("http://localhost:3001/chat", {
+      chatSocketRef.current = io("https://f7d3-2409-40f4-4022-ace-d029-bca6-988d-b0b7.ngrok-free.app/chat", {
         transports: ["websocket", "polling"],
         path: "/socket.io",
         reconnection: true,
@@ -212,7 +212,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
   // ==========================
   useEffect(() => {
     // We only need to connect to /update once, so let's do it on mount
-    updateSocketRef.current = io("http://localhost:3001/update", {
+    updateSocketRef.current = io("https://f7d3-2409-40f4-4022-ace-d029-bca6-988d-b0b7.ngrok-free.app/update", {
       transports: ["websocket", "polling"],
       path: "/socket.io",
       reconnection: true,
