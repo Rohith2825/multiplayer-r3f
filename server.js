@@ -15,10 +15,10 @@ const io = new Server(httpServer, {
   },
   transports: ['websocket', 'polling'],
   allowEIO3: true,
-  pingTimeout: 60000,
-  pingInterval: 25000,
+  // pingTimeout: 60000,
+  // pingInterval: 25000,
   path: '/socket.io',
-  connectTimeout: 45000,
+  // connectTimeout: 45000,
 });
 
 // Middleware
@@ -53,6 +53,7 @@ chatNameSpace.on('connection', (socket) => {
   socket.on('sendMessage', ({ message, roomName }) => {
     console.log(`Message from ${socket.id} in room ${roomName}: ${message}`);
     chatNameSpace.to(roomName).except(socket.id).emit('broadcastMessage', {
+      id: socket.id,
       message: message,
       name: socket.userData.name,
     });

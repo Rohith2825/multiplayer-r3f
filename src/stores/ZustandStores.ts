@@ -248,10 +248,37 @@ const useTourStore = create<TourStore>((set) => ({
   setTourComplete: (value) => set({ tourComplete: value }),
 }));
 
+interface MultiplayerStore {
+  roomCode: string;
+  socketId: string | null;
+  playerPosition: { x: number; y: number; z: number };
+  otherPlayers: Record<string, any>; // Adjust type as needed
+  setRoomCode: (code: string) => void; // Specify type for code
+  setSocketId: (id: string | null) => void; // Specify type for id
+  setPlayerPosition: (position: { x: number; y: number; z: number }) => void; // Specify type for position
+  setOtherPlayers: (players: Record<string, any>) => void; // Specify type for players
+  updateOtherPlayers: (players: Record<string, any>) => void; // Specify type for players
+}
+
+const useMultiplayerStore = create<MultiplayerStore>((set) => ({
+  roomCode: '',
+  socketId: null,
+  playerPosition: { x: 0, y: 0, z: 0 },
+  otherPlayers: {},
+  setRoomCode: (code: string) => set({ roomCode: code }),
+  setSocketId: (id: string | null) => set({ socketId: id }),
+  setPlayerPosition: (position: { x: number; y: number; z: number }) => set({ playerPosition: position }),
+  setOtherPlayers: (players: Record<string, any>) => set({ otherPlayers: players }),
+  updateOtherPlayers: (players: Record<string, any>) => set((state) => ({ 
+    otherPlayers: { ...state.otherPlayers, ...players } 
+  })),
+}));
+
 export {
   useComponentStore,
   usePointerLockStore,
   useTouchStore,
   useDriverStore,
   useTourStore,
+  useMultiplayerStore,
 };

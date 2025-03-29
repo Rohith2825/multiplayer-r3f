@@ -81,7 +81,7 @@ export const OtherPlayer = ({ id, name, position, rotation }) => {
 
   return (
     <group ref={meshRef}>
-      <Html position={[0, 3, 0]} center>
+      <Html position={[0, 1, 0]} center zIndexRange={[0, 0]}>
         <div style={{
           background: 'rgba(0, 0, 0, 0.8)',
           color: 'white',
@@ -89,6 +89,7 @@ export const OtherPlayer = ({ id, name, position, rotation }) => {
           borderRadius: '4px',
           fontSize: '12px',
           whiteSpace: 'nowrap',
+          zIndex: -1,
         }}>
           {name}
         </div>

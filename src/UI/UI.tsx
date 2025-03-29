@@ -6,6 +6,7 @@ import ChatbotModal from "../Chatbot";
 import {
   useComponentStore,
   useDriverStore,
+  useMultiplayerStore,
   useTourStore,
 } from "../stores/ZustandStores";
 import { ShopifyProvider, CartProvider } from "@shopify/hydrogen-react";
@@ -102,6 +103,8 @@ const UI = () => {
       navigator.userAgent
     )
   );
+
+  const { roomCode, otherPlayers } = useMultiplayerStore();
 
   const openChatbotModal = () => {
     setChatbotOpen(true);
@@ -310,6 +313,8 @@ const UI = () => {
           onChatbotModalClose={() => {
             closeChatbotModal();
           }}
+          roomCode={roomCode}
+          playerName={otherPlayers.name}
         />
       </div>
       <ReactAudioPlayer

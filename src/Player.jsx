@@ -7,7 +7,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import nipplejs from "nipplejs";
 import gsap from "gsap";
-import { useComponentStore, useTouchStore } from "./stores/ZustandStores";
+import { useComponentStore, useTouchStore, useMultiplayerStore } from "./stores/ZustandStores";
 import { CameraController } from "./CameraController";
 import { ProductGSAPUtil } from "./ProductGSAPUtil";
 import io from "socket.io-client";
@@ -54,9 +54,11 @@ export const Player = () => {
   const rapier = useRapier();
 
   const socketRef = useRef();
-  const [otherPlayers, setOtherPlayers] = useState({});
-  const [socketId, setSocketId] = useState(null);
-  const [roomCode, setRoomCode] = useState('');
+  const { 
+    roomCode, setRoomCode,
+    socketId, setSocketId,
+    otherPlayers, setOtherPlayers
+  } = useMultiplayerStore();
   const [showRoomUI, setShowRoomUI] = useState(true);
   const [inputRoomCode, setInputRoomCode] = useState('');
 
@@ -339,7 +341,7 @@ export const Player = () => {
     });
 
     socketRef.current.on('playerData', (players) => {
-      console.log('Received player data:', players);
+      //console.log('Received player data:', players);
       const playersMap = {};
       players.forEach((player) => {
         if (player.id !== socketRef.current.id) {
@@ -465,7 +467,7 @@ export const Player = () => {
 
   return (
     <>
-      <Html position={camera.rotation}>
+      <Html position={camera.rotation}  zIndexRange={[0, 0]}>
         {showRoomUI && (
           <div 
             style={{
@@ -482,6 +484,7 @@ export const Player = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
+              zIndex: 0,
             }}
           >
             <h2 style={{ fontSize: '0.8em', margin: '0' }}>JOIN OR CREATE</h2>
@@ -551,6 +554,7 @@ export const Player = () => {
             zIndex: 1000,
             fontFamily: 'Poppins, sans-serif',
             textAlign: 'center',
+            zIndex: 0,
           }}>
             <div style={{ fontSize: '1em', marginBottom: '5px' }}>ROOM CODE</div>
             <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>{roomCode}</div>
