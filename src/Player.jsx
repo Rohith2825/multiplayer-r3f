@@ -478,12 +478,12 @@ export const Player = () => {
               padding: '8px',
               borderRadius: '8px',
               color: 'white',
-              zIndex: 1000,
               fontFamily: 'Poppins, sans-serif',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
+              pointerEvents: 'auto',
               zIndex: 0,
             }}
           >
@@ -551,7 +551,6 @@ export const Player = () => {
             padding: '10px 20px',
             borderRadius: '5px',
             color: 'white',
-            zIndex: 1000,
             fontFamily: 'Poppins, sans-serif',
             textAlign: 'center',
             zIndex: 0,

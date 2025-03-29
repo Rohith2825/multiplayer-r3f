@@ -14,17 +14,20 @@
 /* Top-right icons container */
 .iconsContainer {
   position: absolute;
-  top: 2%; /* Default for desktop */
+  top: 2%;
+  /* Default for desktop */
   right: 2%;
   display: flex;
   flex-direction: column;
-  gap: 2vh; /* Space between icons scales with the viewport height */
+  gap: 2vh;
+  /* Space between icons scales with the viewport height */
   pointer-events: auto;
 }
 
 /* Individual icon styles */
 .icon {
-  width: 3vw; /* 3% of viewport width */
+  width: 3vw;
+  /* 3% of viewport width */
   height: auto;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -47,39 +50,45 @@
   height: auto;
 }
 
-/* Chat logo on bottom-right */
-.chatLogoContainer {
+.bottomRightContainer {
   position: absolute;
   bottom: 2%;
   right: 2%;
   pointer-events: auto;
+
+  display: flex;
+  flex-direction: column;   /* Stack vertically */
+  align-items: flex-end;    /* Align items to the right edge */
+  gap: 2vh;                 /* Vertical space between icons */
 }
 
-.chatLogo {
+.chatLogo,
+.voiceChatLogo {
   width: 3vw;
   height: auto;
   cursor: pointer;
   transition: transform 0.2s ease;
 
   &:hover {
-      transform: scale(1.05);
+    transform: scale(1.05);
   }
 }
 
-.swalPopup{
+
+.swalPopup {
   font-family: 'Poppins', sans-serif !important;
 }
 
-.swalTitle{
+.swalTitle {
   font-family: 'Poppins', sans-serif !important;
   font-size: 32px;
 }
 
-.swalActions{
+.swalActions {
   width: 100%;
 }
 
-.swalButton{
+.swalButton {
   min-width: 40%;
   font-size: 24px;
 }
@@ -88,9 +97,12 @@
 /* Mobile responsiveness */
 @media screen and (max-width: 768px) {
   .iconsContainer {
-    top: 3%; /* Slightly lower than desktop but closer to the top */
-    right: 5%; /* More padding from the edge for smaller screens */
-    gap: 2vh; /* Keep spacing consistent */
+    top: 3%;
+    /* Slightly lower than desktop but closer to the top */
+    right: 5%;
+    /* More padding from the edge for smaller screens */
+    gap: 2vh;
+    /* Keep spacing consistent */
   }
 
   .chatLogoContainer {
@@ -99,24 +111,32 @@
   }
 
   .icon {
-    width: 7vw; /* Slightly larger icons for mobile */
+    width: 7vw;
+    /* Slightly larger icons for mobile */
   }
 
-  
+
   .chatLogo {
-    width: 7vw; /* Larger logos for mobile */
+    width: 7vw;
+    /* Larger logos for mobile */
   }
 
-  .brandLogo{
+  .brandLogo {
     width: 40vw;
+  }
+
+  .voiceChatLogo {
+    width: 7vw;
   }
 }
 
 @media screen and (max-width: 480px) {
   .iconsContainer {
-    top: 2%; /* Closer to the top for very small devices */
+    top: 2%;
+    /* Closer to the top for very small devices */
     right: 5%;
-    gap: 2vh; /* Maintain consistent spacing */
+    gap: 2vh;
+    /* Maintain consistent spacing */
   }
 
   .chatLogoContainer {
@@ -125,16 +145,22 @@
   }
 
   .icon {
-    width: 10vw; /* Larger icons for mobile */
+    width: 10vw;
+    /* Larger icons for mobile */
   }
 
 
   .chatLogo {
-    width: 10vw; /* Adjust logos for smaller screens */
+    width: 10vw;
+    /* Adjust logos for smaller screens */
   }
 
-  .brandLogo{
+  .brandLogo {
     width: 40vw;
+  }
+
+  .voiceChatLogo {
+    width: 10vw;
   }
 }
 
@@ -142,14 +168,20 @@
 /* Landscape mode adjustments */
 @media screen and (orientation: landscape) and (max-height: 768px) {
   .brandLogo {
-    width: 15vw; /* Half the size compared to portrait */
+    width: 15vw;
+    /* Half the size compared to portrait */
   }
 
   .icon {
-    width: 5vw; /* Smaller icons in landscape */
+    width: 5vw;
+    /* Smaller icons in landscape */
   }
 
   .chatLogo {
+    width: 5vw;
+  }
+
+  .voiceChatLogo {
     width: 5vw;
   }
 }
@@ -157,7 +189,8 @@
 /* Small devices in landscape */
 @media screen and (orientation: landscape) and (max-height: 480px) {
   .brandLogo {
-    width: 12vw; /* Even smaller for very small devices in landscape */
+    width: 12vw;
+    /* Even smaller for very small devices in landscape */
   }
 
   .icon {
@@ -165,6 +198,10 @@
   }
 
   .chatLogo {
+    width: 4vw;
+  }
+
+  .voiceChatLogo {
     width: 4vw;
   }
 }

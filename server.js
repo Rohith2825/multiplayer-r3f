@@ -42,6 +42,8 @@ chatNameSpace.on('connection', (socket) => {
   };
   console.log(`${socket.id} has connected to chat namespace`);
 
+
+
   socket.on('setName', (name) => {
     socket.userData.name = name;
   });
@@ -59,6 +61,19 @@ chatNameSpace.on('connection', (socket) => {
     });
   });
 
+  // In your chatNameSpace on 'connection'
+  socket.on("joinVoiceRoom", (roomCode) => {
+    socket.join(roomCode);
+
+    // Tell all in the room about this new peer:
+    socket.to(roomCode).emit("newVoicePeer", socket.id);
+
+    // Send existing peers to newly joined user:
+    const existingPeers = [...chatNameSpace.adapter.rooms.get(roomCode) || []]
+      .filter((id) => id !== socket.id);
+    socket.emit("existingVoicePeers", existingPeers);
+  });
+
   socket.on('disconnect', () => {
     console.log(`${socket.id} has disconnected from chat`);
   });
@@ -69,7 +84,7 @@ const updateNameSpace = io.of('/update');
 
 updateNameSpace.on('connection', (socket) => {
   console.log(`[Server] New connection to update namespace: ${socket.id}`);
-  
+
   socket.userData = {
     position: { x: 0, y: -500, z: -500 },
     quaternion: { x: 0, y: 0, z: 0, w: 0 },

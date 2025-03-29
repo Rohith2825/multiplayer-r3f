@@ -21,6 +21,7 @@ import ContactUsModal from "@/ContactUsModal";
 import ReactAudioPlayer from "react-audio-player";
 import ModalWrapper from "@/ModalWrapper";
 import ProductSearcher from "@/ProductSearcher";
+import VoiceChat from "@/VoiceChat";
 
 const customDriverStyles = `
   .driver-popover {
@@ -270,7 +271,13 @@ const UI = () => {
         <img src="/logo.avif" alt="Brand Logo" className={styles.brandLogo} />
       </div>
 
-      <div className={styles.chatLogoContainer}>
+      <div className={styles.bottomRightContainer}>
+      <VoiceChat
+          roomCode={roomCode}
+          className={styles.voiceChatLogo}
+          playerName={otherPlayers.name}
+          micOffIcon="/icons/MicOff.png"
+          micOnIcon="/icons/MicOn.png" />
         <img
           src="/icons/Chatbot.svg"
           alt="Chatbot"
@@ -281,6 +288,7 @@ const UI = () => {
           }}
         />
       </div>
+
 
       <ShopifyProvider
         countryIsoCode="ID"
