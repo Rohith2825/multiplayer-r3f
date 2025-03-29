@@ -42,30 +42,35 @@ function useWishlist(roomCode: string) {
   }, []); // Empty dependency array ensures this effect runs only once
 
   const addItemsToWishlist = (itemIds: number[]) => {
-    for (const itemId of itemIds) {
-      if (!wishlist.find((wishlistItemId: number) => wishlistItemId === itemId)) {
-        const updatedWishlist = [...wishlist, itemId];
-        setWishlist(updatedWishlist);
-        socket.emit('updateWishlist', updatedWishlist);
-      } else {
-        console.log('Item already exists in wishlist:', itemId);
+    setWishlist((prevWishlist) => {
+      const newWishlist = [...prevWishlist];
+      for (const itemId of itemIds) {
+        if (!newWishlist.includes(itemId)) {
+          newWishlist.push(itemId);
+        } else {
+          console.log('Item already exists in wishlist:', itemId);
+        }
       }
-    }
+      socket.emit('updateWishlist', newWishlist);
+      return newWishlist;
+    });
   };
   
   const removeItemsFromWishlist = (itemIds: number[]) => {
-    console.log('Removing items from wishlist:', itemIds);
-    const updatedWishlist = wishlist.filter((wishlistItemId: number) => !itemIds.includes(wishlistItemId));
-    setWishlist(updatedWishlist);
-    socket.emit('updateWishlist', updatedWishlist);
+    setWishlist((prevWishlist) => {
+      const newWishlist = prevWishlist.filter((id) => !itemIds.includes(id));
+      socket.emit('updateWishlist', newWishlist);
+      return newWishlist;
+    });
   };
   
   const clearWishlist = () => {
-    console.log('Clearing wishlist');
-    setWishlist([]);
-    socket.emit('updateWishlist', []);
+    setWishlist(() => {
+      socket.emit('updateWishlist', []);
+      return [];
+    });
   };
-
+  
   return { wishlist, addItemsToWishlist, removeItemsFromWishlist, clearWishlist };
 }
 
