@@ -117,6 +117,29 @@ updateNameSpace.on('connection', (socket) => {
     if (gameRooms.get(roomCode).wishlist && gameRooms.get(roomCode).wishlist.length > 0) {
       socket.emit('wishlistUpdated', gameRooms.get(roomCode).wishlist);
     }
+
+    if (room.cart && room.cart.length > 0) {
+      updateNameSpace.to(roomCode).emit('cartUpdated', room.cart);
+    }
+  });
+
+  socket.on('updateCart', (cart) => {
+    // Check if the socket is part of a room
+    if (!socket.userData.roomCode) {
+      console.log(`Socket ${socket.id} is not in a room. Ignoring cart update.`);
+      return;
+    }
+    const roomCode = socket.userData.roomCode;
+
+    // If using the gameRooms map to track rooms:
+    if (gameRooms.has(roomCode)) {
+      const room = gameRooms.get(roomCode);
+      // Store the new cart state in the room object
+      room.cart = cart;
+      
+      // Broadcast the updated cart only to participants in the room
+      updateNameSpace.to(roomCode).emit('cartUpdated', cart);
+    }
   });
 
   socket.on('createRoom', () => {
