@@ -1,7 +1,7 @@
 import { Box, Button, Card, Typography, ButtonBase } from "@mui/material";
 import { useCart, ModelViewer } from "@shopify/hydrogen-react";
 import { useEffect, useRef, useState } from "react";
-import { useComponentStore } from "./stores/ZustandStores";
+import { useComponentStore, useMultiplayerStore } from "./stores/ZustandStores";
 import Variant from "./Types/Variant";
 import DOMPurify from "dompurify";
 import useWishlist from "./WishlistHook";
@@ -16,6 +16,7 @@ const Modal = () => {
   };
 
   const containerRef = useRef(null);
+  const { roomCode } = useMultiplayerStore();
   const modelViewerElement = useRef(null);
   const [arSupported, setArSupported] = useState(false);
 
@@ -56,7 +57,7 @@ const Modal = () => {
   );
   const [isIosChrome, setIsIosChrome] = useState(false);
 
-  const { wishlist, addItemsToWishlist, removeItemsFromWishlist } = useWishlist();
+  const { wishlist, addItemsToWishlist, removeItemsFromWishlist } = useWishlist(roomCode);
 
   const [selectedVariant, setSelectedVariant] = useState<Variant>();
   useEffect(() => {

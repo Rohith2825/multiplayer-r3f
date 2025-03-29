@@ -112,6 +112,11 @@ updateNameSpace.on('connection', (socket) => {
     gameRooms.get(roomCode).addPlayer(socket);
     socket.join(roomCode);
     socket.emit('generateCode', roomCode);
+
+    // Send current wishlist if it exists
+    if (gameRooms.get(roomCode).wishlist && gameRooms.get(roomCode).wishlist.length > 0) {
+      socket.emit('wishlistUpdated', gameRooms.get(roomCode).wishlist);
+    }
   });
 
   socket.on('createRoom', () => {
@@ -128,6 +133,25 @@ updateNameSpace.on('connection', (socket) => {
     socket.join(newCode);
     console.log(`[Server] Emitting generateCode event to socket ${socket.id} with code ${newCode}`);
     socket.emit('generateCode', newCode);
+  });
+
+  socket.on('updateWishlist', (wishlist) => {
+    // Check if the socket is part of a room
+    if (!socket.userData.roomCode) {
+      console.log(`Socket ${socket.id} is not in a room. Ignoring wishlist update.`);
+      return;
+    }
+    const roomCode = socket.userData.roomCode;
+
+    // If using the gameRooms map to track rooms:
+    if (gameRooms.has(roomCode)) {
+      const room = gameRooms.get(roomCode);
+      // Optionally store the wishlist within the room object
+      room.wishlist = wishlist;
+
+      // Emit the updated wishlist only to participants in the room
+      updateNameSpace.to(roomCode).emit('wishlistUpdated', wishlist);
+    }
   });
 
   socket.on('disconnecting', () => {

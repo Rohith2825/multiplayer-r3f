@@ -247,12 +247,12 @@ const UI = () => {
           className={styles.icon}
           onClick={openCart}
         />
-        <img
+        {roomCode && <img
           src="/icons/Wishlist.svg"
           alt="Wishlist"
           className={styles.icon}
           onClick={openWishlist}
-        />
+        />}
         <img
           src="/icons/Settings.svg"
           alt="Settings"

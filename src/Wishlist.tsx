@@ -8,10 +8,11 @@ import {
 import useWishlist from './WishlistHook';
 import Swal from 'sweetalert2';
 import styles from '@/UI/UI.module.scss';
-import { useComponentStore } from '@/stores/ZustandStores';
+import { useComponentStore, useMultiplayerStore } from '@/stores/ZustandStores';
 
 const Wishlist = () => {
-  const { wishlist, removeItemsFromWishlist, clearWishlist } = useWishlist();
+  const { roomCode } = useMultiplayerStore();
+  const { wishlist, removeItemsFromWishlist, clearWishlist } = useWishlist(roomCode);
   const { closeWishlist, products,openModal,setSelectedProduct } = useComponentStore();
 
   const wishlistRef = useRef<HTMLDivElement>(null);
