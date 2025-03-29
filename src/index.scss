@@ -5,6 +5,7 @@
     margin: 0;
     padding: 0;
     user-select: none;
+    -webkit-tap-highlight-color: transparent; /* Disable tap highlight on mobile */
     font-family: "Poppins", sans-serif;
 }
 

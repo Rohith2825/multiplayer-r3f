@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
 import { io, Socket } from "socket.io-client";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface VoiceChatProps {
   /** 
@@ -52,6 +54,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
   micOnIcon,
   socketServerUrl = "http://localhost:3001/",
   peerServer = { host: "localhost", port: 9000, path: "/" },
+  style,
 }) => {
   // Is our mic currently on?
   const [isMicOn, setIsMicOn] = useState(false);
@@ -139,6 +142,12 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
 
   // 4) "toggleMic" => user clicks mic icon
   const toggleMic = async () => {
+    // Check if roomCode is valid
+    if (!roomCode || roomCode.trim() === "") {
+      toast.warning("Please join or create a room before using the mic.");
+      return;
+    }
+
     if (isMicOn) {
       // Turn mic OFF
       setIsMicOn(false);
@@ -164,7 +173,12 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
 
     // Turn mic ON
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+        },
+      });
       console.log("[VoiceChat] Local stream acquired:", stream);
       const audioTracks = stream.getAudioTracks();
       audioTracks.forEach((track, i) => {
@@ -172,7 +186,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
       });
       localStreamRef.current = stream;
 
-      // Create Peer
+      // Create Peer using PeerJS Cloud (default)
       const newPeer = new Peer();
 
       // On open => join the voice room
@@ -194,16 +208,18 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
       setIsMicOn(true);
     } catch (err) {
       console.error("[VoiceChat] Error accessing microphone:", err);
+      toast.error("Error accessing microphone. Please check your settings.");
     }
   };
 
   return (
-      <img
-        src={isMicOn ? micOnIcon : micOffIcon}
-        alt="Mic"
-        className={className}
-        onClick={toggleMic}
-      />
+    <img
+      src={isMicOn ? micOnIcon : micOffIcon}
+      alt="Mic"
+      className={className}
+      onClick={toggleMic}
+      style={style}
+    />
   );
 };
 

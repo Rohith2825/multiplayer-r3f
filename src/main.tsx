@@ -8,6 +8,7 @@ import UI from "@/UI/UI.tsx";
 import { ProductService } from "./api/shopifyAPIService";
 import { useComponentStore } from "./stores/ZustandStores";
 import Load from "./Loader";
+import { ToastContainer } from "react-toastify";
 
 
 function CanvasWrapper() {
@@ -72,7 +73,7 @@ function CanvasWrapper() {
 
   return (
     <div id="container">
-      {progress >= 100 && <UI />}
+      {progress >= 100 && <><UI /><ToastContainer position="top-center" autoClose={3000} /></>}
       <Suspense fallback={<Load progress={progress} />}>
         <Canvas camera={{ fov: 45 }} shadows>
           <App />
