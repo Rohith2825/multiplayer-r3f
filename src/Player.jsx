@@ -285,13 +285,12 @@ export const Player = () => {
 
   useEffect(() => {
     // Initialize Socket.IO connection with configuration
-    socketRef.current = io('https://f7d3-2409-40f4-4022-ace-d029-bca6-988d-b0b7.ngrok-free.app/update', {
+    socketRef.current = io('http://localhost:3001/update', {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      timeout: 20000,
       forceNew: true,
       autoConnect: true,
     });

@@ -24,7 +24,7 @@ interface VoiceChatProps {
 
   /**
    * Base URL of your Socket.IO server.
-   * Defaults to "https://f7d3-2409-40f4-4022-ace-d029-bca6-988d-b0b7.ngrok-free.app" if not provided.
+   * Defaults to "http://localhost:3001/" if not provided.
    */
   socketServerUrl?: string;
 
@@ -50,7 +50,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
   className,
   micOffIcon,
   micOnIcon,
-  socketServerUrl = "https://f7d3-2409-40f4-4022-ace-d029-bca6-988d-b0b7.ngrok-free.app",
+  socketServerUrl = "http://localhost:3001/",
   peerServer = { host: "localhost", port: 9000, path: "/" },
 }) => {
   // Is our mic currently on?
