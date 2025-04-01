@@ -1081,6 +1081,7 @@ const Modal = () => {
           Buy Now
         </Button>
         <Button
+          disabled={!roomCode}
           sx={{
             minWidth: "35px",
             width: "35px",
