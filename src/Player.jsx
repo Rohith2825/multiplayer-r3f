@@ -358,7 +358,7 @@ export const Player = () => {
   // Socket.io setup
   useEffect(() => {
     // Initialize Socket.IO connection with configuration
-    socketRef.current = io('http://localhost:3001/update', {
+    socketRef.current = io('https://multiplayer.strategyfox.in/update', {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
