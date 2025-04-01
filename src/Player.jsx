@@ -696,28 +696,13 @@ export const Player = () => {
               />
               <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                 <button
-                  onClick={handleJoinRoom}
+                  onClick={handleCreateRoom}
                   style={{
                     padding: '4px 10px',
                     marginRight: '6px',
                     borderRadius: '4px',
                     border: 'none',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '0.8em',
-                    fontFamily: 'Poppins, sans-serif',
-                  }}
-                >
-                  Join Room
-                </button>
-                <button
-                  onClick={handleCreateRoom}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '4px',
-                    border: 'none',
-                    backgroundColor: '#2196F3',
+                    backgroundColor: '#E2441E',
                     color: 'white',
                     cursor: 'pointer',
                     fontSize: '0.8em',
@@ -725,6 +710,21 @@ export const Player = () => {
                   }}
                 >
                   Create Room
+                </button>
+                <button
+                  onClick={handleJoinRoom}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    backgroundColor: 'white',
+                    color: 'black',
+                    cursor: 'pointer',
+                    fontSize: '0.8em',
+                    fontFamily: 'Poppins, sans-serif',
+                  }}
+                >
+                  Join Room
                 </button>
               </div>
             </div>
