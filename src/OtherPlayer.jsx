@@ -43,7 +43,7 @@ export const OtherPlayer = ({ id, name, position, rotation }) => {
       // Set the model's position based on the position prop and adjust for height
       model.position.set(position.x, position.y - height / 1.2, position.z); // Adjust Y position to sit on the ground
       model.rotation.set(rotation.x, rotation.y - Math.PI, rotation.z); // Set rotation if needed
-      model.scale.set(1.5, 1.5, 1.5); // Scale the model
+      model.scale.set(1.2, 1.2, 1.2); // Scale the model
       scene.add(model); // Add the model to the scene
     }
   }, [position, rotation, model, scene]);

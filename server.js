@@ -8,29 +8,40 @@ import { GameRoom, generateRoomCode } from './backend-modules/rooms.js';
 const ROOM_CODE_LENGTH = 6;
 const app = express();
 const httpServer = createServer(app);
+
+// Environment variables with defaults
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const PORT = process.env.PORT || 3001;
+
+// Configure CORS for regular HTTP requests
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
+// Configure Socket.IO with CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: '*',
+    origin: FRONTEND_URL,
     methods: ['GET', 'POST'],
+    credentials: true
   },
   transports: ['websocket', 'polling'],
   allowEIO3: true,
-  // pingTimeout: 60000,
-  // pingInterval: 25000,
   path: '/socket.io',
-  // connectTimeout: 45000,
 });
 
-// Middleware
-app.use(cors());
 app.use(express.json());
-app.use(express.static('dist'));
 
-// Serve static files
-const indexPath = path.join(process.cwd(), 'dist', 'index.html');
-app.get('/', (req, res) => {
-  res.sendFile(indexPath);
-});
+// Optional static file serving (can be removed if not needed)
+if (process.env.SERVE_STATIC === 'true') {
+  app.use(express.static('dist'));
+  const indexPath = path.join(process.cwd(), 'dist', 'index.html');
+  app.get('/', (req, res) => {
+    res.sendFile(indexPath);
+  });
+}
 
 // Chat Namespace
 const chatNameSpace = io.of('/chat');
@@ -211,7 +222,6 @@ updateNameSpace.on('connection', (socket) => {
   }, 20);
 });
 
-const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
