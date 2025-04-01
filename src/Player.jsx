@@ -731,19 +731,46 @@ export const Player = () => {
           </div>
         )}
         {roomCode && (
-          <div style={{
-            position: 'fixed',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            color: 'white',
-            fontFamily: 'Poppins, sans-serif',
-            textAlign: 'center',
-            zIndex: 0,
-          }}>
+          <div 
+            style={{
+              position: 'fixed',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '10px 20px',
+              borderRadius: '5px',
+              color: 'white',
+              fontFamily: 'Poppins, sans-serif',
+              textAlign: 'center',
+              zIndex: 0,
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              navigator.clipboard.writeText(roomCode)
+                .then(() => {
+                  // Optional: Show a brief notification that it was copied
+                  const notification = document.createElement('div');
+                  notification.textContent = 'Copied to clipboard!';
+                  notification.style.position = 'fixed';
+                  notification.style.top = '15%';
+                  notification.style.left = '50%';
+                  notification.style.transform = 'translateX(-50%)';
+                  notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                  notification.style.padding = '5px 10px';
+                  notification.style.borderRadius = '5px';
+                  notification.style.color = 'white';
+                  notification.style.fontFamily = 'Poppins, sans-serif';
+                  document.body.appendChild(notification);
+                  setTimeout(() => {
+                    document.body.removeChild(notification);
+                  }, 2000);
+                })
+                .catch(err => {
+                  console.error('Failed to copy room code: ', err);
+                });
+            }}
+          >
             <div style={{ fontSize: '1em', marginBottom: '5px' }}>ROOM CODE</div>
             <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>{roomCode}</div>
           </div>
