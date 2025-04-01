@@ -72,13 +72,14 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
       }
 
       // Connect to /chat
-      chatSocketRef.current = io("http://localhost:3001/chat", {
+      chatSocketRef.current = io("https://multiplayer-backend-production.up.railway.app/chat", {
         transports: ["websocket", "polling"],
         path: "/socket.io",
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
+        timeout:20000,
       });
 
       if (props.playerName) {
@@ -212,13 +213,14 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
   // ==========================
   useEffect(() => {
     // We only need to connect to /update once, so let's do it on mount
-    updateSocketRef.current = io("http://localhost:3001/update", {
+    updateSocketRef.current = io("https://multiplayer-backend-production.up.railway.app/update", {
       transports: ["websocket", "polling"],
       path: "/socket.io",
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
+      timeout:20000,
     });
 
     updateSocketRef.current.on("connect", () => {
