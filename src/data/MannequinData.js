@@ -2,21 +2,21 @@
 const mannequinData = [
   {
     id: 9002457202933,
-    position: [2, -4, -77],
+    position: [0, -4, -77],
     modelPath: "/models/inter_elem1.glb",
     scale: 1.2,
     sale: true,
   },
   {
     id: 9002463199477,
-    position: [4, -4, -77],
+    position: [2, -4, -77],
     modelPath: "/models/inter_elem2.glb",
     scale: 1.2,
     sale: true,
   },
   {
     id: 9002452910325,
-    position: [6, -4, -77],
+    position: [4, -4, -77],
     modelPath: "/models/inter_elem.glb",
     scale: 1.2,
   },
