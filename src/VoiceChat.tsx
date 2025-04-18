@@ -5,15 +5,15 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface VoiceChatProps {
-  /** 
-   * The room code for your voice chat. 
+  /**
+   * The room code for your voice chat.
    * Everyone with the same roomCode can hear each other.
    */
   roomCode: string;
   className?: string;
 
-  /** 
-   * An optional player name if you want to call socket.emit("setName", ...) 
+  /**
+   * An optional player name if you want to call socket.emit("setName", ...)
    * on the /chat namespace.
    */
   playerName?: string;
@@ -40,7 +40,7 @@ interface VoiceChatProps {
   };
 
   /**
-   * (Optional) Inline styles or CSS class if you want to position 
+   * (Optional) Inline styles or CSS class if you want to position
    * this mic icon differently.
    */
   style?: React.CSSProperties;
@@ -69,7 +69,9 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
   const chatSocketRef = useRef<Socket | null>(null);
 
   // We'll track remote audio elements so we can remove them when mic is off
-  const [remoteAudios, setRemoteAudios] = useState<{ [peerId: string]: HTMLAudioElement }>({});
+  const [remoteAudios, setRemoteAudios] = useState<{
+    [peerId: string]: HTMLAudioElement;
+  }>({});
 
   // 1) Connect to Socket.IO (/chat) exactly once
   useEffect(() => {

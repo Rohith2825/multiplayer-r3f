@@ -29,7 +29,7 @@ interface ChatbotProps {
 type Message = {
   type: "user" | "bot" | "other";
   text: string;
-  sender?: string;     // e.g. "Player78" or an ID
+  sender?: string; // e.g. "Player78" or an ID
   timestamp: number;
 };
 
@@ -58,8 +58,8 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // We'll keep two sockets:
-  const chatSocketRef = useRef<Socket | null>(null);    // For /chat
-  const updateSocketRef = useRef<Socket | null>(null);  // For /update
+  const chatSocketRef = useRef<Socket | null>(null); // For /chat
+  const updateSocketRef = useRef<Socket | null>(null); // For /update
 
   // ==========================
   // 1) Connect to /chat
@@ -86,7 +86,6 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
         // Make sure we emit to /chat namespace, not just /update
         chatSocketRef.current.emit("setName", props.playerName);
       }
-
 
       // Chat connection status
       chatSocketRef.current.on("connect", () => {
@@ -174,7 +173,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
         const playerId = data.id;
         console.log("Player ID:", playerId);
         const fallbackName = data.name || "Unknown Player";
-        
+
         // If we have them in otherPlayers, use that
         let resolvedName = fallbackName;
         if (playerId && otherPlayers[playerId]?.name) {
@@ -182,8 +181,8 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
         }
         // Otherwise, if we at least have an ID, build "Player" + last 4 characters
         else if (playerId) {
-          const last4 = playerId.slice(0,4); // e.g. "abcd"
-          resolvedName = "Player " + last4.toUpperCase();  // => "Playerabcd"
+          const last4 = playerId.slice(0, 4); // e.g. "abcd"
+          resolvedName = "Player " + last4.toUpperCase(); // => "Playerabcd"
         }
 
         setMessages((prev) => [
@@ -205,7 +204,13 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
         }
       };
     }
-  }, [props.isChatbotModalOpen, chatMode, props.roomCode, props.playerName, otherPlayers]);
+  }, [
+    props.isChatbotModalOpen,
+    chatMode,
+    props.roomCode,
+    props.playerName,
+    otherPlayers,
+  ]);
 
   // ==========================
   // 2) Connect to /update
@@ -230,7 +235,6 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
         updateSocketRef.current?.emit("setName", props.playerName);
       }
     });
-
 
     // Whenever we get 'playerData', store the info so we know other players' names
     updateSocketRef.current.on("playerData", (players) => {
@@ -321,7 +325,8 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
 
         if (response.ok) {
           const data = await response.json();
-          const botMessage = data.response || "I'm sorry, I couldn't process that.";
+          const botMessage =
+            data.response || "I'm sorry, I couldn't process that.";
 
           setMessages((prev) => [
             ...prev,
@@ -351,9 +356,18 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
           },
         ]);
       }
-    } else if (chatMode === "others" && chatSocketRef.current && props.roomCode) {
+    } else if (
+      chatMode === "others" &&
+      chatSocketRef.current &&
+      props.roomCode
+    ) {
       // Send to the chat server
-      console.log("Sending message:", currentMessage, "to room:", props.roomCode);
+      console.log(
+        "Sending message:",
+        currentMessage,
+        "to room:",
+        props.roomCode
+      );
       chatSocketRef.current.emit("sendMessage", {
         message: currentMessage,
         roomName: props.roomCode,
@@ -436,7 +450,8 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
   // ==========================
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
