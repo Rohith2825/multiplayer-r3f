@@ -26,7 +26,7 @@ interface VoiceChatProps {
 
   /**
    * Base URL of your Socket.IO server.
-   * Defaults to "https://multiplayer-backend-production.up.railway.app/" if not provided.
+   * Defaults to "http://localhost:3001/" if not provided.
    */
   socketServerUrl?: string;
 
@@ -52,7 +52,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
   className,
   micOffIcon,
   micOnIcon,
-  socketServerUrl = "https://multiplayer-backend-production.up.railway.app/",
+  socketServerUrl = "http://localhost:3001/",
   peerServer = { host: "localhost", port: 9000, path: "/" },
   style,
 }) => {

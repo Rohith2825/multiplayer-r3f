@@ -1,7 +1,7 @@
 import Variant from '@/Types/Variant';
 import Product from '../Types/Product';
 
-const BASE_URL = "https://us-central1-global-road-449105-e7.cloudfunctions.net/function-2";
+const BASE_URL = "https://function-2-864197837687.asia-south1.run.app";
 
 async function fetchData<T>(method: "GET", endpoint: string): Promise<T> {
   try {
@@ -79,8 +79,9 @@ interface ProductResponse {
                 description: string,
               }
             }[]
-          }
-          bodyHtml: string
+          },
+          bodyHtml: string,
+          descriptionHtml: string 
         }
       }[]
     }

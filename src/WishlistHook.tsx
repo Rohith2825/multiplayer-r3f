@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client'; // Import socket.io client
 
-const socket = io('https://multiplayer-backend-production.up.railway.app/update'); // Replace with your socket server URL
+const socket = io('http://localhost:3001/update'); // Replace with your socket server URL
 socket.on('connect', () => {
   console.log('Socket connected with id:', socket.id);
 });

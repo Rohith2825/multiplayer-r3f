@@ -11,7 +11,6 @@ import { useComponentStore, useTouchStore, useMultiplayerStore } from "./stores/
 import { CameraController } from "./CameraController";
 import { ProductGSAPUtil } from "./ProductGSAPUtil";
 import io from "socket.io-client";
-import { OtherPlayer } from "./OtherPlayer";
 
 const MOVE_SPEED = 12;
 
@@ -159,8 +158,7 @@ export const Player = () => {
   const socketRef = useRef();
   const {
     roomCode, setRoomCode,
-    socketId, setSocketId,
-    otherPlayers, setOtherPlayers
+    socketId, setSocketId
   } = useMultiplayerStore();
   const [showRoomUI, setShowRoomUI] = useState(true);
   const [inputRoomCode, setInputRoomCode] = useState('');
@@ -355,10 +353,10 @@ export const Player = () => {
   }, [isTouchEnabled, isModalOpen, isCartOpen, isWishlistOpen, isInfoModalOpen, isDiscountModalOpen,
     isSettingsModalOpen, isTermsModalOpen, isContactModalOpen, crosshairVisible, isProductSearcherOpen]);
 
-  // Socket.io setup
+  // Socket.io setup - simplified to only handle room and wishlist functionality
   useEffect(() => {
     // Initialize Socket.IO connection with configuration
-    socketRef.current = io('https://multiplayer-backend-production.up.railway.app/update', {
+    socketRef.current = io('http://localhost:3001/update', {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -366,18 +364,13 @@ export const Player = () => {
       reconnectionDelay: 1000,
       forceNew: true,
       autoConnect: true,
-      timeout:20000,
+      timeout: 20000,
     });
 
-    // ... socket event handlers remain the same
+    // Socket event handlers for room management and wishlist
     socketRef.current.on('connect', () => {
       console.log('Connected to update namespace with ID:', socketRef.current.id);
       setSocketId(socketRef.current.id);
-      // Force a re-render of the player model
-      if (playerRef.current) {
-        playerRef.current.wakeUp();
-      }
-      socketRef.current.emit('setID');
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -417,29 +410,9 @@ export const Player = () => {
       alert('Invalid room code. Please try again.');
     });
 
-    socketRef.current.on('playerData', (players) => {
-      //console.log('Received player data:', players);
-      const playersMap = {};
-      players.forEach((player) => {
-        if (player.id !== socketRef.current.id) {
-          playersMap[player.id] = {
-            id: player.id,
-            name: player.name,
-            position: {
-              x: player.position_x,
-              y: player.position_y,
-              z: player.position_z,
-            },
-            rotation: {
-              x: player.quaternion_x,
-              y: player.quaternion_y,
-              z: player.quaternion_z,
-              w: player.quaternion_w,
-            },
-          };
-        }
-      });
-      setOtherPlayers(playersMap);
+    socketRef.current.on('wishlistUpdated', (wishlist) => {
+      console.log('Received updated wishlist:', wishlist);
+      // Handle the updated wishlist (you'll need to implement this based on your app's state management)
     });
 
     return () => {
@@ -522,26 +495,24 @@ export const Player = () => {
       const currentPosition = playerRef.current.translation();
       const currentPos = new THREE.Vector3(currentPosition.x, currentPosition.y, currentPosition.z);
 
-      
-      // Improved movement detection logic
       // Improved movement detection logic
       if (playerMovementState.current.previousPosition.lengthSq() > 0) {
-      // Check if any movement input is active
-      const hasMovementInput = forward || backward || left || right || 
-                          (direction.x !== 0 || direction.z !== 0);
-      
-      // Calculate velocity magnitude in XZ plane only
-      const velocityMagnitude = new THREE.Vector2(velocity.x, velocity.z).length();
-      
-      // More strict conditions for movement state
-      const isMoving = hasMovementInput || velocityMagnitude > 0.5;
-      
-      // Force idle state when no input and velocity is very low
-      if (!hasMovementInput && velocityMagnitude < 0.1) {
-        setIsPlayerMoving(false);
-      } else if (isMoving !== isPlayerMoving) {
-        setIsPlayerMoving(isMoving);
-      }
+        // Check if any movement input is active
+        const hasMovementInput = forward || backward || left || right || 
+                            (direction.x !== 0 || direction.z !== 0);
+        
+        // Calculate velocity magnitude in XZ plane only
+        const velocityMagnitude = new THREE.Vector2(velocity.x, velocity.z).length();
+        
+        // More strict conditions for movement state
+        const isMoving = hasMovementInput || velocityMagnitude > 0.5;
+        
+        // Force idle state when no input and velocity is very low
+        if (!hasMovementInput && velocityMagnitude < 0.1) {
+          setIsPlayerMoving(false);
+        } else if (isMoving !== isPlayerMoving) {
+          setIsPlayerMoving(isMoving);
+        }
       }
       
       // Update previous position
@@ -599,25 +570,6 @@ export const Player = () => {
       // Fix: Lock rotation to prevent capsule from falling over
       playerRef.current.lockRotations(true);
 
-      // Emit position update
-      if (socketRef.current) {
-        const position = playerRef.current.translation();
-        const quaternion = playerRef.current.rotation();
-        socketRef.current.emit('updatePlayer', {
-          position: {
-            x: position.x,
-            y: position.y,
-            z: position.z,
-          },
-          quaternion: [
-            quaternion.x,
-            quaternion.y,
-            quaternion.z,
-            quaternion.w,
-          ],
-        });
-      }
-
       if (jump && canJump) {
         doJump();
         setCanJump(false);
@@ -648,14 +600,14 @@ export const Player = () => {
 
   return (
     <>
-    <OrbitControls 
-      ref={orbitControlsRef}
-      enableDamping={true}
-      dampingFactor={0.1}
-      maxDistance={CAMERA_MAX_DISTANCE}
-      minDistance={CAMERA_MIN_DISTANCE}
-      enablePan={false}
-    />
+      <OrbitControls 
+        ref={orbitControlsRef}
+        enableDamping={true}
+        dampingFactor={0.1}
+        maxDistance={CAMERA_MAX_DISTANCE}
+        minDistance={CAMERA_MIN_DISTANCE}
+        enablePan={false}
+      />
 
       <Html position={camera.rotation} zIndexRange={[0, 0]}>
         {showRoomUI && (
@@ -790,16 +742,6 @@ export const Player = () => {
         <PlayerModel isMoving={isPlayerMoving} />
         <CapsuleCollider args={[1.2, 1]} />
       </RigidBody>
-
-      {Object.entries(otherPlayers).map(([id, player]) => (
-        <OtherPlayer
-          key={id}
-          id={id}
-          name={player.name}
-          position={player.position}
-          rotation={player.rotation}
-        />
-      ))}
     </>
   );
 };

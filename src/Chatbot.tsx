@@ -72,7 +72,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
       }
 
       // Connect to /chat
-      chatSocketRef.current = io("https://multiplayer-backend-production.up.railway.app/chat", {
+      chatSocketRef.current = io("http://localhost:3001/chat", {
         transports: ["websocket", "polling"],
         path: "/socket.io",
         reconnection: true,
@@ -213,7 +213,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
   // ==========================
   useEffect(() => {
     // We only need to connect to /update once, so let's do it on mount
-    updateSocketRef.current = io("https://multiplayer-backend-production.up.railway.app/update", {
+    updateSocketRef.current = io("http://localhost:3001/update", {
       transports: ["websocket", "polling"],
       path: "/socket.io",
       reconnection: true,
@@ -309,7 +309,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
       try {
         // Example AI endpoint
         const response = await fetch(
-          "https://us-central1-global-road-449105-e7.cloudfunctions.net/function-1",
+          "https://function-1-864197837687.asia-south1.run.app",
           {
             method: "POST",
             headers: {

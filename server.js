@@ -53,8 +53,6 @@ chatNameSpace.on('connection', (socket) => {
   };
   console.log(`${socket.id} has connected to chat namespace`);
 
-
-
   socket.on('setName', (name) => {
     socket.userData.name = name;
   });
@@ -90,15 +88,13 @@ chatNameSpace.on('connection', (socket) => {
   });
 });
 
-// Update Namespace
+// Update Namespace - simplified to only handle room management and wishlist
 const updateNameSpace = io.of('/update');
 
 updateNameSpace.on('connection', (socket) => {
   console.log(`[Server] New connection to update namespace: ${socket.id}`);
 
   socket.userData = {
-    position: { x: 0, y: -500, z: -500 },
-    quaternion: { x: 0, y: 0, z: 0, w: 0 },
     name: `Player${Math.floor(Math.random() * 1000)}`,
     roomCode: '',
   };
@@ -157,7 +153,7 @@ updateNameSpace.on('connection', (socket) => {
     // If using the gameRooms map to track rooms:
     if (gameRooms.has(roomCode)) {
       const room = gameRooms.get(roomCode);
-      // Optionally store the wishlist within the room object
+      // Store the wishlist within the room object
       room.wishlist = wishlist;
 
       // Emit the updated wishlist only to participants in the room
@@ -179,47 +175,7 @@ updateNameSpace.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`${socket.id} has disconnected from update namespace`);
-    updateNameSpace.emit('removePlayer', socket.id);
   });
-
-  socket.on('updatePlayer', (player) => {
-    if (!socket.userData.roomCode) {
-      console.log(`[Server] Received update from socket ${socket.id} but no room code set`);
-      return;
-    }
-    socket.userData.position.x = player.position.x;
-    socket.userData.position.y = player.position.y;
-    socket.userData.position.z = player.position.z;
-    socket.userData.quaternion.x = player.quaternion[0];
-    socket.userData.quaternion.y = player.quaternion[1];
-    socket.userData.quaternion.z = player.quaternion[2];
-    socket.userData.quaternion.w = player.quaternion[3];
-  });
-
-  setInterval(() => {
-    for (const gameRoom of gameRooms.values()) {
-      const playerData = [];
-      for (const socket of gameRoom.playerSockets.values()) {
-        if (!socket.userData.roomCode) continue;
-        playerData.push({
-          id: socket.id,
-          name: socket.userData.name,
-          position_x: socket.userData.position.x,
-          position_y: socket.userData.position.y,
-          position_z: socket.userData.position.z,
-          quaternion_x: socket.userData.quaternion.x,
-          quaternion_y: socket.userData.quaternion.y,
-          quaternion_z: socket.userData.quaternion.z,
-          quaternion_w: socket.userData.quaternion.w,
-        });
-      }
-
-      if (playerData.length > 0) {
-        console.log(`[Server] Sending player data to room ${gameRoom.roomCode}:`, playerData);
-        updateNameSpace.to(gameRoom.roomCode).emit('playerData', playerData);
-      }
-    }
-  }, 20);
 });
 
 httpServer.listen(PORT, () => {
