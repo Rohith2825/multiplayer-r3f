@@ -72,7 +72,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
       }
 
       // Connect to /chat
-      chatSocketRef.current = io("http://localhost:3001/chat", {
+      chatSocketRef.current = io("https://multiplayer-backend-8iex.onrender.com/chat", {
         transports: ["websocket", "polling"],
         path: "/socket.io",
         reconnection: true,
@@ -218,7 +218,7 @@ const ChatBotModal: React.FC<ChatbotProps> = (props) => {
   // ==========================
   useEffect(() => {
     // We only need to connect to /update once, so let's do it on mount
-    updateSocketRef.current = io("http://localhost:3001/update", {
+    updateSocketRef.current = io("https://multiplayer-backend-8iex.onrender.com/update", {
       transports: ["websocket", "polling"],
       path: "/socket.io",
       reconnection: true,

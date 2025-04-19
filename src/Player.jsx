@@ -398,7 +398,7 @@ export const Player = () => {
   // Socket.io setup - simplified to only handle room and wishlist functionality
   useEffect(() => {
     // Initialize Socket.IO connection with configuration
-    socketRef.current = io('http://localhost:3001/update', {
+    socketRef.current = io('https://multiplayer-backend-8iex.onrender.com/update', {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
