@@ -17,126 +17,23 @@ import { ProductGSAPUtil } from "./ProductGSAPUtil";
 import io from "socket.io-client";
 
 const MOVE_SPEED = 12;
+const TOUCH_SENSITIVITY = {
+  PORTRAIT: {
+    x: 0.004,
+    y: 0.004,
+  },
+  LANDSCAPE: {
+    x: 0.004,
+    y: 0.004,
+  },
+};
 
 const direction = new THREE.Vector3();
 const frontVector = new THREE.Vector3();
 const sideVector = new THREE.Vector3();
 
 const RESPAWN_HEIGHT = -5;
-const FOV_PADDING = 0.2;
-const CAMERA_MIN_DISTANCE = 3;
-const CAMERA_MAX_DISTANCE = 10;
 const START_POSITION = new THREE.Vector3(0, 7, -5);
-const cameraCollisionRaycaster = new THREE.Raycaster();
-
-// Simple player model for third-person view
-// In the PlayerModel component
-const PlayerModel = ({ isMoving }) => {
-  const { scene: model, animations } = useGLTF(
-    "/models/asian_female_animated.glb"
-  );
-
-  useEffect(() => {
-    if (model) {
-      // Ensure the model is visible
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.visible = true;
-          child.frustumCulled = false; // Prevent disappearing due to frustum culling
-        }
-      });
-
-      model.scale.set(1.2, 1.2, 1.2);
-
-      // Calculate the bounding box to adjust position
-      const box = new THREE.Box3().setFromObject(model);
-      const height = box.max.y - box.min.y;
-
-      // Adjust model position to align with collider
-      model.position.y = -height / 1.2;
-    }
-  }, [model]);
-  const mixer = useRef();
-  const animationState = useRef("idle");
-  const idleAction = useRef();
-  const runningAction = useRef();
-
-  // Add debounce timer for animation state changes
-  const lastStateChangeTime = useRef(0);
-  const IDLE_DEBOUNCE_TIME = 1000; // Increased to 1 second
-
-  useEffect(() => {
-    if (animations && animations.length) {
-      mixer.current = new THREE.AnimationMixer(model);
-
-      // Find and store animations
-      const idleAnimation = animations.find((anim) => anim.name === "Idle");
-      const runningAnimation = animations.find(
-        (anim) => anim.name === "Running"
-      );
-
-      if (idleAnimation) {
-        idleAction.current = mixer.current.clipAction(idleAnimation);
-        idleAction.current.play();
-      }
-      if (runningAnimation) {
-        runningAction.current = mixer.current.clipAction(runningAnimation);
-        // Initially just prepare the running animation but don't play it
-        runningAction.current.stop();
-      }
-
-      // Log available animations for debugging
-      console.log(
-        "Available animations:",
-        animations.map((a) => a.name)
-      );
-    }
-
-    // Scale and adjust the model
-    if (model) {
-      model.scale.set(1.2, 1.2, 1.2);
-
-      // Calculate the bounding box to adjust position
-      const box = new THREE.Box3().setFromObject(model);
-      const height = box.max.y - box.min.y;
-
-      // Adjust model position to align with collider
-      model.position.y = -height / 1.2;
-    }
-  }, [animations, model]);
-
-  // Update animation based on movement state with improved debounce
-  useEffect(() => {
-    if (!mixer.current || !idleAction.current || !runningAction.current) return;
-
-    const currentTime = Date.now();
-
-    if (isMoving && animationState.current !== "running") {
-      // Switch to running immediately
-      idleAction.current.fadeOut(0.3);
-      runningAction.current.reset().fadeIn(0.3).play();
-      animationState.current = "running";
-      lastStateChangeTime.current = currentTime;
-      console.log("Switching to running animation");
-    } else if (!isMoving && animationState.current === "running") {
-      // Only switch to idle if we've been stationary for the debounce time
-      runningAction.current.fadeOut(0.3);
-      idleAction.current.reset().fadeIn(0.3).play();
-      animationState.current = "idle";
-      lastStateChangeTime.current = currentTime;
-      console.log("Switching to idle animation");
-    }
-  }, [isMoving]);
-
-  // Update animation mixer on each frame
-  useFrame((state, delta) => {
-    if (mixer.current) {
-      mixer.current.update(delta);
-    }
-  });
-
-  return <primitive object={model} castShadow />;
-};
 
 export const Player = () => {
   const playerRef = useRef();
@@ -173,20 +70,7 @@ export const Player = () => {
   const [showRoomUI, setShowRoomUI] = useState(true);
   const [inputRoomCode, setInputRoomCode] = useState("");
 
-  // Setup orbit controls
-  useEffect(() => {
-    if (orbitControlsRef.current) {
-      // Configure orbit controls for third person view
-      orbitControlsRef.current.minDistance = 3;
-      orbitControlsRef.current.maxDistance = 10;
-      orbitControlsRef.current.maxPolarAngle = Math.PI / 2 - 0.1; // Prevent going below ground
-      orbitControlsRef.current.minPolarAngle = 0.1; // Prevent going too high
-      orbitControlsRef.current.enableDamping = true;
-      orbitControlsRef.current.dampingFactor = 0.1;
-    }
-  }, [orbitControlsRef]);
 
-  // Rest of your useEffect hooks remain largely the same
   useEffect(() => {
     const handleOrientationChange = () => {
       setIsPortrait(window.innerHeight > window.innerWidth);
@@ -200,7 +84,6 @@ export const Player = () => {
     };
   }, []);
 
-  // Mobile joystick controls
   useEffect(() => {
     if (!isMobile) return;
 
@@ -305,17 +188,9 @@ export const Player = () => {
   useEffect(() => {
     if (!playerRef.current || initialTourComplete.current) return;
 
-    const startPosition = new THREE.Vector3(-3, 5, -5);
+    const startPosition = new THREE.Vector3(-3, 55, 80);
     playerRef.current.setTranslation(startPosition);
-    // Set initial rotation to face forward (negative Z direction)
-    const forwardRotation = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(0, 1, 0),
-      Math.PI
-    );
-    playerRef.current.setRotation(forwardRotation);
-    camera.position.copy(
-      startPosition.clone().add(new THREE.Vector3(0, 5, 10))
-    );
+    camera.position.copy(startPosition);
 
     const timeline = gsap.timeline({
       onComplete: () => {
@@ -324,22 +199,22 @@ export const Player = () => {
 
         playerRef.current.setLinvel({ x: 0, y: 0, z: 0 });
         playerRef.current.setAngvel({ x: 0, y: 0, z: 0 });
-        // Maintain forward rotation after tour
-        playerRef.current.setRotation(forwardRotation);
       },
+    });
+
+    timeline.to(camera.position, {
+      duration: 3,
+      x: START_POSITION.x,
+      y: START_POSITION.y,
+      z: START_POSITION.z,
+      ease: "power2.inOut",
     });
 
     const updatePhysicsBody = () => {
       if (!playerRef.current || initialTourComplete.current) return;
 
       playerRef.current.wakeUp();
-      playerRef.current.setTranslation(
-        new THREE.Vector3(
-          camera.position.x,
-          camera.position.y - 5, // Adjust for camera height
-          camera.position.z - 10 // Adjust for camera distance
-        )
-      );
+      playerRef.current.setTranslation(camera.position);
       playerRef.current.setLinvel({ x: 0, y: 0, z: 0 });
     };
 
@@ -351,32 +226,75 @@ export const Player = () => {
     };
   }, [camera]);
 
-  // Touch controls - modified for orbit controls
   useEffect(() => {
-    // We don't need to handle touch events manually since OrbitControls will handle them
-    // This section can be simplified or removed if OrbitControls handles all touch interactions
-
-    // Keep minimal touch handling for mobile UI interactions
     const handleTouchStart = (e) => {
       if (!isTouchEnabled) return;
-      if (
-        isModalOpen ||
-        isCartOpen ||
-        isWishlistOpen ||
-        isInfoModalOpen ||
-        isDiscountModalOpen ||
-        isSettingsModalOpen ||
-        isTermsModalOpen ||
-        isContactModalOpen ||
-        isProductSearcherOpen ||
-        !crosshairVisible
-      )
-        return;
+      if (isModalOpen || isCartOpen || isWishlistOpen || isInfoModalOpen || isDiscountModalOpen || isSettingsModalOpen || isTermsModalOpen || isContactModalOpen || isProductSearcherOpen || !crosshairVisible) return;
 
       if (e.target.closest("#joystickZone")) return;
+
+      const touches = Array.from(e.touches);
+      const rightmostTouch = touches.reduce((rightmost, touch) => {
+        return !rightmost || touch.clientX > rightmost.clientX
+          ? touch
+          : rightmost;
+      }, null);
+
+      if (rightmostTouch) {
+        touchRef.current.cameraTouch = rightmostTouch.identifier;
+        touchRef.current.previousCameraTouch = {
+          x: rightmostTouch.clientX,
+          y: rightmostTouch.clientY,
+        };
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isTouchEnabled) return;
+      if (isModalOpen || isCartOpen || isWishlistOpen || isInfoModalOpen || isDiscountModalOpen || isSettingsModalOpen || isTermsModalOpen || isContactModalOpen || isProductSearcherOpen || !crosshairVisible) return;
+
+      const touch = Array.from(e.touches).find(
+        (t) => t.identifier === touchRef.current.cameraTouch
+      );
+
+      if (!touch) return;
+
+      const deltaX = touch.clientX - touchRef.current.previousCameraTouch.x;
+      const deltaY = touch.clientY - touchRef.current.previousCameraTouch.y;
+
+      const sensitivity = TOUCH_SENSITIVITY.PORTRAIT;
+
+      camera.rotation.order = "YXZ";
+      camera.rotation.y -= deltaX * sensitivity.x;
+      camera.rotation.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, camera.rotation.x - deltaY * sensitivity.y)
+      );
+
+      touchRef.current.previousCameraTouch = {
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+    };
+
+    const handleTouchEnd = (e) => {
+      if (!isTouchEnabled) return;
+      if (isModalOpen || isCartOpen || isWishlistOpen || isInfoModalOpen || isDiscountModalOpen || isSettingsModalOpen || isTermsModalOpen || isContactModalOpen || isProductSearcherOpen || !crosshairVisible) return;
+
+      const remainingTouches = Array.from(e.touches);
+      if (
+        !remainingTouches.some(
+          (t) => t.identifier === touchRef.current.cameraTouch
+        )
+      ) {
+        touchRef.current.cameraTouch = null;
+        touchRef.current.previousCameraTouch = null;
+      }
     };
 
     document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchmove", handleTouchMove);
+    document.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
@@ -487,11 +405,7 @@ export const Player = () => {
 
   const combinedInput = new THREE.Vector3();
   const movementDirection = new THREE.Vector3();
-  const playerRotation = new THREE.Quaternion();
-  const dir = new THREE.Vector3();
-
-  // Modified useFrame for third-person movement with improved movement detection
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (!playerRef.current || isAnimating) return;
 
     const { y: playerY } = playerRef.current.translation();
@@ -499,85 +413,9 @@ export const Player = () => {
       respawnPlayer();
     }
 
-    // Add camera collision detection
-    if (orbitControlsRef.current && playerRef.current) {
-      const playerPosition = playerRef.current.translation();
-      const targetPosition = new THREE.Vector3(
-        playerPosition.x,
-        playerPosition.y + 1,
-        playerPosition.z
-      );
-      orbitControlsRef.current.target.copy(targetPosition);
-
-      // Calculate direction and set up raycaster
-      dir.subVectors(camera.position, targetPosition).normalize();
-      cameraCollisionRaycaster.set(targetPosition, dir);
-
-      const collisionObjects = state.scene.children.filter(
-        (child) => child.isMesh && !child.userData.isPlayer
-      );
-
-      const intersects = cameraCollisionRaycaster.intersectObjects(
-        collisionObjects,
-        false
-      );
-
-      if (intersects.length > 0) {
-        const currentCameraDistance = targetPosition.distanceTo(
-          camera.position
-        );
-        if (intersects[0].distance < currentCameraDistance) {
-          // Add FOV-based padding to prevent edge clipping
-          const paddedPoint = intersects[0].point
-            .clone()
-            .sub(dir.multiplyScalar(FOV_PADDING * camera.fov));
-          camera.position.copy(paddedPoint);
-        }
-      }
-    }
-
-    if (
-      !isModalOpen &&
-      !isInfoModalOpen &&
-      !isCartOpen &&
-      !isWishlistOpen &&
-      !isDiscountModalOpen &&
-      !isSettingsModalOpen &&
-      !isTermsModalOpen &&
-      !isContactModalOpen &&
-      !isProductSearcherOpen &&
-      crosshairVisible
-    ) {
+    if (!isModalOpen && !isInfoModalOpen && !isCartOpen && !isWishlistOpen && !isDiscountModalOpen && !isSettingsModalOpen && !isTermsModalOpen && !isContactModalOpen && !isProductSearcherOpen && crosshairVisible) {
       const velocity = playerRef.current.linvel();
 
-      // Get current position
-      const currentPosition = playerRef.current.translation();
-      const currentPos = new THREE.Vector3(currentPosition.x, currentPosition.y, currentPosition.z);
-
-      // Improved movement detection logic
-      if (playerMovementState.current.previousPosition.lengthSq() > 0) {
-        // Check if any movement input is active
-        const hasMovementInput = forward || backward || left || right || 
-                            (direction.x !== 0 || direction.z !== 0);
-        
-        // Calculate velocity magnitude in XZ plane only
-        const velocityMagnitude = new THREE.Vector2(velocity.x, velocity.z).length();
-        
-        // More strict conditions for movement state
-        const isMoving = hasMovementInput || velocityMagnitude > 0.5;
-        
-        // Force idle state when no input and velocity is very low
-        if (!hasMovementInput && velocityMagnitude < 0.1) {
-          setIsPlayerMoving(false);
-        } else if (isMoving !== isPlayerMoving) {
-          setIsPlayerMoving(isMoving);
-        }
-      }
-
-      // Update previous position
-      playerMovementState.current.previousPosition.copy(currentPos);
-
-      // Get input direction
       frontVector.set(0, 0, backward - forward);
       sideVector.set(right - left, 0, 0);
 
@@ -587,55 +425,19 @@ export const Player = () => {
         .add(direction)
         .normalize();
 
-      // Get camera direction for movement
-      const cameraDirection = new THREE.Vector3();
-      camera.getWorldDirection(cameraDirection);
-      cameraDirection.y = 0;
-      cameraDirection.normalize();
+      movementDirection
+        .copy(combinedInput)
+        .applyQuaternion(state.camera.quaternion)
+        .normalize()
+        .multiplyScalar(MOVE_SPEED);
 
-      // Calculate right vector from camera
-      const cameraRight = new THREE.Vector3();
-      cameraRight
-        .crossVectors(new THREE.Vector3(0, 1, 0), cameraDirection)
-        .normalize();
 
-      // Apply movement relative to camera direction
-      movementDirection.set(0, 0, 0);
-      if (combinedInput.z !== 0) {
-        // Fix: Correct the forward/backward movement direction
-        movementDirection.addScaledVector(cameraDirection, -combinedInput.z);
-      }
-      if (combinedInput.x !== 0) {
-        // Keep the left/right movement as is since it's working correctly
-        movementDirection.addScaledVector(cameraRight, -combinedInput.x);
-      }
-
-      // Normalize and scale movement
-      if (movementDirection.lengthSq() > 0) {
-        movementDirection.normalize().multiplyScalar(MOVE_SPEED);
-
-        // Rotate player model to face movement direction
-        const targetRotation = Math.atan2(
-          movementDirection.x,
-          movementDirection.z
-        );
-        playerRotation.setFromAxisAngle(
-          new THREE.Vector3(0, 1, 0),
-          targetRotation
-        );
-        playerRef.current.setRotation(playerRotation);
-      }
-
-      // Apply movement
       playerRef.current.wakeUp();
       playerRef.current.setLinvel({
         x: movementDirection.x,
         y: velocity.y,
         z: movementDirection.z,
       });
-
-      // Fix: Lock rotation to prevent capsule from falling over
-      playerRef.current.lockRotations(true);
 
       if (jump && canJump) {
         doJump();
@@ -644,20 +446,16 @@ export const Player = () => {
       }
     }
 
-    // Update orbit controls target to follow player
-    if (orbitControlsRef.current && playerRef.current) {
-      const playerPosition = playerRef.current.translation();
-      orbitControlsRef.current.target.set(
-        playerPosition.x,
-        playerPosition.y + 1,
-        playerPosition.z
-      );
-    }
+
+    const { x, y, z } = playerRef.current.translation();
+    const lerpFactor = 0.05;
+    state.camera.position.lerp({ x, y, z }, lerpFactor);
   });
 
   const doJump = () => {
     playerRef.current.setLinvel({ x: 0, y: 5, z: 0 });
   };
+
 
   const respawnPlayer = () => {
     if (!initialTourComplete.current) return;
@@ -667,18 +465,9 @@ export const Player = () => {
     playerRef.current.setAngvel({ x: 0, y: 0, z: 0 });
   };
 
-  useGLTF.preload("/models/asian_female_animated.glb");
-
   return (
     <>
-      <OrbitControls 
-        ref={orbitControlsRef}
-        enableDamping={true}
-        dampingFactor={0.1}
-        maxDistance={CAMERA_MAX_DISTANCE}
-        minDistance={CAMERA_MIN_DISTANCE}
-        enablePan={false}
-      />
+
 
       <Html position={camera.rotation} zIndexRange={[0, 0]}>
         {showRoomUI && (
@@ -828,7 +617,9 @@ export const Player = () => {
       >
         <ProductGSAPUtil setAnimating={setAnimating} playerRef={playerRef} />
         <CameraController setAnimating={setAnimating} playerRef={playerRef} />
-        <PlayerModel isMoving={isPlayerMoving} />
+        <mesh castShadow>
+          <CapsuleCollider args={[1.2, 1]} />
+        </mesh>
         <CapsuleCollider args={[1.2, 1]} />
       </RigidBody>
     </>
